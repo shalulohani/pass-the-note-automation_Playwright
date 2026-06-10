@@ -44,3 +44,5 @@ export class NotesPage {
 
   async verifyNoteNotExists(title: string) {
     await expect(this.page.locator('.note-item', { hasText: title })).toHaveCount(0);
+  }
+}

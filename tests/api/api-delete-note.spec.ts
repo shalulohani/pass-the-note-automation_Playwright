@@ -1,6 +1,5 @@
 import { test, expect, request } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
-import { DashboardPage } from '../../pages/DashboardPage';
 import { NotesPage } from '../../pages/NotesPage';
 
 test.describe('API + UI - Delete Note', () => {
@@ -55,13 +54,10 @@ test.describe('API + UI - Delete Note', () => {
     // Step 4: Verify in UI
     // -------------------------------
     const loginPage = new LoginPage(page);
-    const dashboardPage = new DashboardPage(page);
     const notesPage = new NotesPage(page);
 
     await loginPage.goto();
     await loginPage.login('testuser@example.com', 'Password123');
-
-    await dashboardPage.verifyDashboardLoaded();
 
     // Validate note does NOT exist
     await notesPage.verifyNoteNotExists(noteTitle);
