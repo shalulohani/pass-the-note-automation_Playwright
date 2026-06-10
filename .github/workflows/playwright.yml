@@ -2,72 +2,55 @@ name: Playwright Tests with Allure History and GitHub Pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ master ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ master ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Needed for Allure history
 
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm install
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
-    - name: Install Allure CLI
-      run: npm install -g allure-commandline --save-dev
+      - name: Run Playwright Tests
+        run: npx playwright test --reporter=line
 
-    # ------------------------------
-    # DOWNLOAD PREVIOUS ALLURE HISTORY
-    # ------------------------------
-    - name: Download Allure History
-      uses: actions/download-artifact@v4
-      with:
-        name: allure-history
-        path: allure-history
-      continue-on-error: true
+      - name: Copy Allure History
+        run: |
+          mkdir -p allure-history
+          if [ -d "allure-history" ]; then
+            cp -R allure-history/* allure-results/ || true
+          fi
 
-    # ------------------------------
-    # RUN TESTS AND GENERATE RESULTS
-    # ------------------------------
-    - name: Run Playwright Tests
-      run: npx playwright test --reporter=line,allure-playwright
+      - name: Generate Allure Report
+        run: |
+          npm install -g allure-commandline --save-dev
+          allure generate allure-results --clean -o allure-report
 
-    # ------------------------------
-    # GENERATE NEW ALLURE REPORT
-    # ------------------------------
-    - name: Generate Allure Report
-      run: |
-        mkdir -p allure-history
-        allure generate allure-results --clean -o allure-report
-        cp -r allure-report/history allure-history || true
+      - name: Upload Allure Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
 
-    # ------------------------------
-    # UPLOAD HISTORY FOR NEXT RUN
-    # ------------------------------
-    - name: Upload Allure History
-      uses: actions/upload-artifact@v4
-      with:
-        name: allure-history
-        path: allure-history
-
-    # ------------------------------
-    # DEPLOY REPORT TO GITHUB PAGES
-    # ------------------------------
-    - name: Deploy Allure Report to GitHub Pages
-      if: always()
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: allure-report
+      - name: Deploy Allure Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report
+          keep_files: true
