@@ -2,9 +2,9 @@ name: Playwright Tests with Allure History and GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   test:
@@ -24,6 +24,10 @@ jobs:
       - name: Clean install dependencies
         run: npm ci
 
+      # ⭐ CRITICAL FIX: Install Allure reporter on CI
+      - name: Install Allure Playwright Reporter
+        run: npm install allure-playwright
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
@@ -33,10 +37,13 @@ jobs:
       - name: Run Playwright Tests
         run: npx playwright test --reporter=line
 
-      - name: Generate Allure Report Artifact
+      - name: Install Allure CLI
+        if: always()
+        run: npm install -g allure-commandline
+
+      - name: Generate Allure Report
         if: always()
         run: |
-          npm install -g allure-commandline
           mkdir -p allure-results
           allure generate allure-results --clean -o allure-report
 
