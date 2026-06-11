@@ -1,16 +1,14 @@
-name: Playwright Tests with Allure History and GitHub Pages
+name: Playwright Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
@@ -19,45 +17,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
 
-      - name: Clean install dependencies
+      - name: Install dependencies
         run: npm ci
 
-      # ⭐ CRITICAL FIX: Install Allure reporter on CI
-      - name: Install Allure Playwright Reporter
-        run: npm install allure-playwright
-
-      - name: Install Playwright browsers
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Verify Playwright installation
-        run: npx playwright --version
-
       - name: Run Playwright Tests
-        run: npx playwright test --reporter=line
+        run: npx playwright test
 
-      - name: Install Allure CLI
-        if: always()
-        run: npm install -g allure-commandline
-
-      - name: Generate Allure Report
-        if: always()
-        run: |
-          mkdir -p allure-results
-          allure generate allure-results --clean -o allure-report
-
-      - name: Upload Allure Report Artifact
+      - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report
-          path: allure-report
-
-      - name: Deploy Allure Report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
-          force_orphan: true
+          name: playwright-report
+          path: playwright-report
