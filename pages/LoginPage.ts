@@ -1,30 +1,33 @@
-import { test, expect } from '@playwright/test';
 import { Page } from '@playwright/test';
 
-export class LoginPage {
-  constructor(private page: Page) {}
+export default class LoginPage {
+  readonly page: Page;
+
+  constructor(page: Page) {
+    this.page = page;
+  }
 
   async goto() {
-    await this.page.goto('/login');
+    // Navigate directly to the login route
+    await this.page.goto('http://localhost:3000/login', { waitUntil: 'networkidle' });
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async login(email: string, password: string) {
+    // Go to login page first
+    await this.goto();
+
+    // Wait for login form
+    await this.page.waitForSelector('input[name="email"]', { timeout: 60000 });
+
+    // Fill credentials
     await this.page.fill('input[name="email"]', email);
     await this.page.fill('input[name="password"]', password);
-    await this.page.click('button[type="submit"]');
+
+    // Click the login button
+    await this.page.click('button:has-text("Login")');
+
+    // Wait for dashboard to appear
+    await this.page.waitForSelector('text=Dashboard', { timeout: 30000 });
   }
 }
-
-test.describe('Login Tests - PassTheNote', () => {
-
-  test('Valid Login should navigate to Dashboard', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
-    await loginPage.goto();
-
-    await loginPage.login('testuser@example.com', 'Password123');
-
-    await expect(page).toHaveURL(/.*dashboard/);
-  });
-
-});

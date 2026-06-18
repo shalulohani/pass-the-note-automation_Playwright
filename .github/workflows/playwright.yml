@@ -25,6 +25,11 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+      - name: Start Mock Backend
+        run: |
+          nohup npm run backend &
+          sleep 3
+
       - name: Run Playwright Tests
         run: npx playwright test
 

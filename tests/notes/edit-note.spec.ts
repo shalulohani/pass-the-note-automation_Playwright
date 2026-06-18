@@ -1,28 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/LoginPage';
-import { NotesPage } from '../../pages/NotesPage';
+import LoginPage from '../../pages/LoginPage';
 
-test.describe('Edit Note - PassTheNote', () => {
+test('User should be able to edit the first note', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.login('test@example.com', 'password123');
 
-  test('User should be able to edit the first note', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const notesPage = new NotesPage(page);
-
-    // Step 1: Login
-    await loginPage.goto();
-    await loginPage.login('testuser@example.com', 'Password123');
-
-    // Step 2: Ensure dashboard loaded
-    await expect(page).toHaveURL(/dashboard/);
-
-    // Step 3: Edit the first note
-    const updatedTitle = 'Updated Note Title';
-    const updatedDescription = 'Updated Note Description';
-
-    await notesPage.editFirstNote(updatedTitle, updatedDescription);
-
-    // Step 4: Validate updated note exists
-    await notesPage.verifyNoteExists(updatedTitle);
-  });
-
+  await page.click('text=Go to Notes');
+  await page.click('button:has-text("Edit")');
+  await page.fill('textarea[name="content"]', 'Edited note content.');
+  await page.click('button:has-text("Save")');
+  await expect(page.locator('text=Edited note content.')).toBeVisible();
 });

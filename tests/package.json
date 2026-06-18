@@ -1,0 +1,4 @@
+"scripts": {
+  "backend": "node api/mock-backend/server.js",
+  "test": "playwright test"
+}
