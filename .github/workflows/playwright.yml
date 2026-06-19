@@ -25,13 +25,16 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+      - name: Verify Playwright Installation
+        run: npx playwright --version
+
       - name: Start Mock Backend
         run: |
           nohup npm run backend &
-          sleep 3
+          sleep 10
 
       - name: Run Playwright Tests
-        run: npx playwright test
+        run: npx playwright test --reporter=html
 
       - name: Upload Playwright HTML Report
         if: always()
